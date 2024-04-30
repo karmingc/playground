@@ -1,0 +1,40 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+  statsd/local:
+    endpoint: "0.0.0.0:8125"
+    aggregation_interval: 5s  # default
+    enable_metric_type: false # default
+
+    # This is needed so that metrics aggregated with `delta` are processed by the Prometheus exporter.
+    # A monotic `sum` is reported as an `counter` in Prometheus.
+    # ref: https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/15353#issuecomment-1297858925
+    # ref: https://opentelemetry.io/docs/specs/otel/compatibility/prometheus_and_openmetrics/#counters
+    #
+    # A `count` metrics by Dogstatsd is the total number of event occurences in one time interval.
+    # ref: https://docs.datadoghq.com/metrics/types/?tab=count#metric-types
+    # If it is always incrementing, then it is a 1:1 mapping to a Prometheus `counter`.
+    is_monotonic_counter: true
+
+
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+  debug:
+    verbosity: detailed
+
+extensions:
+  health_check:
+  pprof:
+  zpages:
+
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp, statsd/local]
+      exporters: [debug, prometheus]
+  telemetry:
+    logs:
+      level: "debug"
