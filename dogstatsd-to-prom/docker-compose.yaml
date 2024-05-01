@@ -8,6 +8,15 @@ services:
     ports:
       - 8888:8888 # Prometheus metrics exposed by the collector
       - 8889:8889 # Prometheus exporter metrics
+      - 8890:8890
       - 4317:4317 # OTLP gRPC receiver
       - 4318:4318 # OTLP http receiver
       - 8125:8125/udp # StatsD receiver
+      - 8126:8126 # Datadog receiver over TCP
+
+  statsd-exporter:
+    image: prom/statsd-exporter:v0.26.1
+    ports:
+      - 9125:9125/udp # StatsD exporter port
+      - 9102:9102 # Prometheus metrics port
+

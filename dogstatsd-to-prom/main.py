@@ -1,6 +1,9 @@
 from datadog import initialize, statsd
+from ddtrace import patch_all, tracer
 import time
 import logging
+
+patch_all()
 
 def init_logger():
     logging.basicConfig()
@@ -14,9 +17,13 @@ def init_dstatsd():
     }
     initialize(**options)
 
+@tracer.wrap()
+def print_msg():
+    print(f"increment py.local.example.increment")
+
 def emit_metrics():
     while(1):
-        print(f"increment py.local.example.increment")
+        # print_msg()
         statsd.increment('py.local.example.increment', tags=["environment:kc-dev"])
         time.sleep(5)
 
