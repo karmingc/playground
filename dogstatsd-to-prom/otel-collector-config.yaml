@@ -1,11 +1,16 @@
 receivers:
-  otlp:
-    protocols:
-      grpc:
-      http:
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'karming-local'
+          scrape_interval: 5s
+          static_configs:
+            - targets: ['0.0.0.0:8889']
+  datadog:
+    endpoint: "0.0.0.0:8126"
   statsd/local:
     endpoint: "0.0.0.0:8125"
-    aggregation_interval: 5s  # default
+    aggregation_interval: 10s  # default
     enable_metric_type: false # default
 
     # This is needed so that metrics aggregated with `delta` are processed by the Prometheus exporter.
@@ -18,6 +23,13 @@ receivers:
     # If it is always incrementing, then it is a 1:1 mapping to a Prometheus `counter`.
     is_monotonic_counter: true
 
+connectors:
+  spanmetrics:
+    histogram:
+        explicit:
+          buckets: [10ms, 250ms, 500ms, 1s, 5s, 15s, 30s, 60s]
+    aggregation_temporality: "AGGREGATION_TEMPORALITY_DELTA"
+    metrics_flush_interval: 60s
 
 exporters:
   prometheus:
@@ -32,9 +44,15 @@ extensions:
 
 service:
   pipelines:
+    traces:
+      receivers: [datadog]
+      exporters: [spanmetrics]
     metrics:
-      receivers: [otlp, statsd/local]
-      exporters: [debug, prometheus]
+      receivers: [statsd/local]
+      exporters: [prometheus]
+    metrics/prom:
+      receivers: [prometheus]
+      exporters: [debug]
   telemetry:
     logs:
-      level: "debug"
+      level: "warn"
