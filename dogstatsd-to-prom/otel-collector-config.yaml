@@ -1,4 +1,8 @@
 receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
   prometheus:
     config:
       scrape_configs:
@@ -48,7 +52,7 @@ service:
       receivers: [datadog]
       exporters: [spanmetrics]
     metrics:
-      receivers: [statsd/local]
+      receivers: [otlp, statsd/local]
       exporters: [prometheus]
     metrics/prom:
       receivers: [prometheus]
