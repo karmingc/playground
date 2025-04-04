@@ -3,6 +3,7 @@ receivers:
     protocols:
       grpc:
       http:
+        endpoint: "0.0.0.0:4318"
   prometheus:
     config:
       scrape_configs:
@@ -26,14 +27,11 @@ receivers:
     # ref: https://docs.datadoghq.com/metrics/types/?tab=count#metric-types
     # If it is always incrementing, then it is a 1:1 mapping to a Prometheus `counter`.
     is_monotonic_counter: true
-
-connectors:
-  spanmetrics:
-    histogram:
-        explicit:
-          buckets: [10ms, 250ms, 500ms, 1s, 5s, 15s, 30s, 60s]
-    aggregation_temporality: "AGGREGATION_TEMPORALITY_DELTA"
-    metrics_flush_interval: 60s
+        
+extensions:
+  health_check:
+  pprof:
+  zpages:
 
 exporters:
   prometheus:
@@ -41,22 +39,18 @@ exporters:
   debug:
     verbosity: detailed
 
-extensions:
-  health_check:
-  pprof:
-  zpages:
 
 service:
   pipelines:
     traces:
       receivers: [datadog]
-      exporters: [spanmetrics]
+      exporters: [debug]
     metrics:
       receivers: [otlp, statsd/local]
-      exporters: [prometheus]
-    metrics/prom:
-      receivers: [prometheus]
-      exporters: [debug]
+      exporters: [debug, prometheus]
+    # metrics/prom:
+    #   receivers: [prometheus]
+    #   exporters: [debug]
   telemetry:
     logs:
-      level: "warn"
+      level: "debug"

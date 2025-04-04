@@ -2,7 +2,7 @@ name: dogstatsd-to-prom
 
 services:
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.99.0
+    image: otel/opentelemetry-collector-contrib:0.122.0
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
     ports:
